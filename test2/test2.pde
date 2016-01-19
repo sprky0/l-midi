@@ -1,11 +1,15 @@
 import javax.sound.midi.*;
-import javax.swing.JOptionPane;
 
 // ok this is fucking stuipid but the java sequencer doesn't send NOTE_ON / NOTE_OFF CEMs properly when playing
 
-/** Iterates the MIDI events of the first track and if they are a
+/**
+ * Iterates the MIDI events of the first track and if they are a
  * NOTE_ON or NOTE_OFF message, adds them to the second track as a
- * Meta event. */
+ * Meta event.
+ *
+ * @note thank you to Andrew Thompson for this solution
+ * @link http://stackoverflow.com/questions/27987400/how-to-get-note-on-off-messages-from-a-midi-sequence
+ */
 public static final void addNotesToTrack(Track track, Track trk) throws InvalidMidiDataException {
 	for (int ii = 0; ii < track.size(); ii++) {
 		MidiEvent me = track.get(ii);
@@ -42,32 +46,32 @@ void setup() {
 		sequencer.setSequence(sequence);
 
 		MetaEventListener mel = new MetaEventListener() {
-
 			@Override
 			public void meta(MetaMessage meta) {
-					final int type = meta.getType();
-					System.out.println("MEL - type: " + type);
+				final int type = meta.getType();
+				byte[] zip = meta.getData();
+				System.out.println("MEL - type: " + type + " " + zip[0] + " " + zip[1] + " " + zip[2]);
+				// 0 = ???, 1 = note number, 2 = velocity ?
 			}
 		};
 		sequencer.addMetaEventListener(mel);
 
 		int[] types = new int[128];
 		for (int ii = 0; ii < 128; ii++) {
-				types[ii] = ii;
+			types[ii] = ii;
 		}
 		ControllerEventListener cel = new ControllerEventListener() {
-
-				@Override
-				public void controlChange(ShortMessage event) {
-						int command = event.getCommand();
-						if (command == ShortMessage.NOTE_ON) {
-								System.out.println("CEL - note on!");
-						} else if (command == ShortMessage.NOTE_OFF) {
-								System.out.println("CEL - note off!");
-						} else {
-								System.out.println("CEL - unknown: " + command);
-						}
+			@Override
+			public void controlChange(ShortMessage event) {
+				int command = event.getCommand();
+				if (command == ShortMessage.NOTE_ON) {
+					System.out.println("CEL - note on!");
+				} else if (command == ShortMessage.NOTE_OFF) {
+					System.out.println("CEL - note off!");
+				} else {
+					System.out.println("CEL - unknown: " + command);
 				}
+			}
 		};
 		int[] listeningTo = sequencer.addControllerEventListener(cel, types);
 		StringBuilder sb = new StringBuilder();
@@ -77,27 +81,27 @@ void setup() {
 		}
 		System.out.println("Listenning to: " + sb.toString());
 
-		int mirror = JOptionPane.showConfirmDialog(
-			null,
-			"Add note on/off messages to another track as meta messages?",
-			"Confirm Mirror",
-			JOptionPane.OK_CANCEL_OPTION);
-		if (mirror == JOptionPane.OK_OPTION) {
-			Track[] tracks = sequence.getTracks();
-			Track trk = sequence.createTrack();
-			for (Track track : tracks) {
-				addNotesToTrack(track, trk);
-			}
+		Track[] tracks = sequence.getTracks();
+		Track trk = sequence.createTrack();
+		for (Track track : tracks) {
+			addNotesToTrack(track, trk);
 		}
 
 		sequencer.setSequence(sequence);
 		sequencer.start();
-		JOptionPane.showMessageDialog(null, "Exit this dialog to end");
-		sequencer.stop();
-		sequencer.close();
 
 	} catch (Exception e){
+
 	}
 
+}
+
+void loop() {
+
+	// deal with loop
+	/*
+	sequencer.stop();
+	sequencer.close();
+	*/
 
 }
