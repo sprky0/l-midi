@@ -1,6 +1,8 @@
 import javax.sound.midi.*;
 
-boolean pedal = false;
+boolean pedalOn = false;
+
+int noteCount = 128;
 int noteState[] = {
 	0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, // 32
 	0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, // 64
@@ -16,8 +18,9 @@ int noteVelocity[] = {
 
 void setup() {
 
-	frameRate(60);
-	size(1024, 400);
+	frameRate(30);
+	size(1024, 512);
+	colorMode(RGB, 255, 255, 255, 255);
 
 	try {
 
@@ -68,7 +71,13 @@ void setup() {
 				} else if (command == ShortMessage.NOTE_OFF) {
 					System.out.println("CEL - note off!");
 				} else {
-					System.out.println("CEL - unknown: " + command);
+					System.out.println("CEL - unknown: " + event.getData1() + " " + event.getData2());
+					// keep track of the pedal state
+					if (pedalOn == false && event.getData1() == 64 && event.getData2() == 127) {
+						pedalOn = true;
+					} else if (pedalOn == true) {
+						pedalOn = false;
+					}
 				}
 			}
 		};
@@ -97,21 +106,27 @@ void setup() {
 
 void draw() {
 
-	for (int i = 0; i < notes.length; i++) {
+	// fade state
+	fill(0,0,0,20);
+	rect(0,0,1024,512);
+
+	for (int i = 0; i < noteCount; i++) {
 		// System.out.println( notes[i] + " " + i);
 		if (noteVelocity[i] > 0) {
 			if (noteState[i] == 1) {
 				// note is on now
-				fill(255,  0,  0);
+				fill(255,  i * 2,  i);
+				rect(i * 8, 0, 8, 512);
 			} else {
-				// note is off but was formerly on
-				fill(100,  0,  0);
+				// in this case the note is off but was formerly on
+				// fill(100,  0,  0);
+				// rect(i * 8, 0, 8, 512);
 			}
 		} else {
-			// note was never on
-			fill(  0,  0,  0);
+			// in this case the note was never on
+			// fill(  0,  0,  0);
+			// rect(i * 8, 0, 8, 512);
 		}
-		rect(i * 8, 0, 8, 400);
 	}
 
 	// optionally deal with loop
