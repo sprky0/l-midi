@@ -32,7 +32,7 @@ int notes[] = {
 void setup() {
 
 	frameRate(60);
-	size(512, 200);
+	size(1024, 400);
 
 	try {
 
@@ -109,9 +109,10 @@ void draw() {
 		} else {
 			fill(  0,  0,  0);
 		}
-		rect(i * 4, 0, 4, 200);
+		rect(i * 8, 0, 8, 400);
 	}
-	// deal with loop
+
+	// optionally deal with loop
 	/*
 	sequencer.stop();
 	sequencer.close();
