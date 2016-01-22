@@ -13,13 +13,30 @@ int notes[] = {
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0
-}; // 128 notes
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0
+}; // 256 notes
 
 void setup() {
 
+	frameRate(60);
+	size(512, 200);
+
 	try {
 
+		// File midiFile = new File(dataPath("demo.mid"));
 		File midiFile = new File(dataPath("test.mid"));
 		Sequencer sequencer = MidiSystem.getSequencer();
 
@@ -32,9 +49,13 @@ void setup() {
 			public void meta(MetaMessage meta) {
 				final int type = meta.getType();
 				byte[] zip = meta.getData();
-				// System.out.println("MEL - type: " + type + " " + zip[0] + " " + zip[1] + " " + zip[2]);
+				System.out.println("MEL - type: " + type + " " + zip[0] + " " + zip[1] + " " + zip[2]);
 				// 0 = ???, 1 = note number, 2 = velocity ?
-				notes[zip[1]] = zip[2];
+				if (type == 2) {
+					notes[zip[1]] = 0;
+				} else if (type == 1) {
+					notes[zip[1]] = zip[2];
+				}
 			}
 		};
 		sequencer.addMetaEventListener(mel);
@@ -82,8 +103,13 @@ void setup() {
 void draw() {
 
 	for (int i = 0; i < notes.length; i++) {
-		System.out.println( notes[i] );
-
+		// System.out.println( notes[i] + " " + i);
+		if (notes[i] > 0) {
+			fill(255,  0,  0);
+		} else {
+			fill(  0,  0,  0);
+		}
+		rect(i * 4, 0, 4, 200);
 	}
 	// deal with loop
 	/*
