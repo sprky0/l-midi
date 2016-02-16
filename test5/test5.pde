@@ -4,6 +4,7 @@ import processing.sound.*;
 SoundFile audio;
 Sequence sequence;
 Sequencer sequencer;
+long lastCheck = 0;
 
 boolean pedalOn = false;
 
@@ -148,6 +149,14 @@ void draw() {
 	sequencer.stop();
 	sequencer.close();
 	*/
+
+	if (millis() - lastCheck > 500) { // long lastCheck = 0;
+		long seqPos = sequencer.getMicrosecondPosition();
+		// long audPos = audio.getMicrosecondPosition();
+		// todo: check audPos and make sure they're tracking together -- may need to rewrite or wrap SoundFile
+		println(seqPos);
+		lastCheck = millis();
+	}
 
 }
 
