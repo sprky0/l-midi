@@ -2,7 +2,7 @@ import javax.sound.midi.*;
 import processing.sound.*;
 import processing.serial.*;
 
-SoundFile audio;
+// SoundFile audio;
 Sequence sequence;
 Sequencer sequencer;
 long lastCheck = 0;
@@ -49,7 +49,7 @@ void setup() {
 	size(1024, 512);
 	colorMode(RGB, 255, 255, 255, 255);
 
-	audio = new SoundFile(this, "op48.mp3");
+	// audio = new SoundFile(this, "op48.mp3");
 
 	try {
 
@@ -165,7 +165,7 @@ void setup() {
 
 		sequencer.start();
 		if (!audioMuted) {
-			audio.play();
+			// audio.play();
 		}
 
 	} catch (Exception e){
