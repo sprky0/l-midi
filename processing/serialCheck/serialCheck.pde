@@ -3,7 +3,7 @@ Serial arduinoPort;
 
 void setup() {
 
-	Serial.out.println(arduinoPort.list());
+	println(arduinoPort.list());
 
 }
 
