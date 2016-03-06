@@ -61,10 +61,29 @@ void serialEvent() {
 		// if the incoming character is a newline, set a flag
 		// so the main loop can do something about it:
 		if (inChar == '\n') {
-			for(int i = 0; i < command.length(); i++) {
-				Serial.print(command.charAt(i));
+			for(int i = 0; i < command.length() && i < 32; i++) {
+				switch(command.charAt(i)) {
+
+					case ' ':
+					// no change
+					break;
+
+					case '0':
+					// set false
+					states[i] = false;
+					break;
+
+					case '1':
+					// set true
+					states[i] = true;
+					break;
+
+					case '\n':
+					// actually this should never happen
+					break;
+
+				}
 			}
-			Serial.print('\n');
 			Serial.print(command);
 			stateChanged = true;
 			// parse state
