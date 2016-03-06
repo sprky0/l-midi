@@ -1,5 +1,5 @@
 import javax.sound.midi.*;
-import processing.sound.*;
+// import processing.sound.*;
 import processing.serial.*;
 
 // SoundFile audio;
@@ -8,7 +8,7 @@ Sequencer sequencer;
 long lastCheck = 0;
 
 Serial arduinoPort;
-int portNum = 2;
+int portNum = 0;
 
 boolean audioMuted = true;
 boolean midiMuted = false;
