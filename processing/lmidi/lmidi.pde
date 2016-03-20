@@ -8,7 +8,8 @@ Sequencer sequencer;
 long lastCheck = 0;
 
 Serial arduinoPort;
-int portNum = 0;
+// int portNum = 0;
+int portNum = 6; // left USB
 
 boolean audioMuted = true;
 boolean midiMuted = false;
@@ -41,21 +42,29 @@ int noteVelocity[] = {
 
 void setup() {
 
-	// println(arduinoPort.list());
+	println(arduinoPort.list());
+
 	// could find this automatically by the expected key or something
 	arduinoPort = new Serial(this, arduinoPort.list()[portNum], 115200);
+
+	arduinoPort.write("00000000000000000000000000000000\n");
+	delay(2000);
+	arduinoPort.write("11111111111111111111111111111111\n");
+	delay(2000);
+	arduinoPort.write("00000000000000000000000000000000\n");
+	delay(2000);
 
 	frameRate(30);
 	size(1024, 512);
 	colorMode(RGB, 255, 255, 255, 255);
 
-	// audio = new SoundFile(this, "op48.mp3");
+	// audio = new SoundFile(this, "waldstein1.mp3");
 
 	try {
 
-		// File midiFile = new File(dataPath("demo.mid"));
+		File midiFile = new File(dataPath("waldstein1-mod1.mid"));
 		// File midiFile = new File(dataPath("test.mid"));
-		File midiFile = new File(dataPath("op48.mid"));
+		// File midiFile = new File(dataPath("op48.mid"));
 		sequencer = MidiSystem.getSequencer();
 
 		sequencer.open();
