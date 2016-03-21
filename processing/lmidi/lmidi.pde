@@ -11,6 +11,7 @@ Serial arduinoPort;
 // int portNum = 0;
 int portNum = 6; // left USB
 
+boolean serialEnabled = false;
 boolean audioMuted = true;
 boolean midiMuted = false;
 
@@ -42,17 +43,21 @@ int noteVelocity[] = {
 
 void setup() {
 
-	println(arduinoPort.list());
+	if (serialEnabled) {
 
-	// could find this automatically by the expected key or something
-	arduinoPort = new Serial(this, arduinoPort.list()[portNum], 115200);
+		println(arduinoPort.list());
 
-	arduinoPort.write("00000000000000000000000000000000\n");
-	delay(2000);
-	arduinoPort.write("11111111111111111111111111111111\n");
-	delay(2000);
-	arduinoPort.write("00000000000000000000000000000000\n");
-	delay(2000);
+		// could find this automatically by the expected key or something
+		arduinoPort = new Serial(this, arduinoPort.list()[portNum], 115200);
+
+		arduinoPort.write("00000000000000000000000000000000\n");
+		delay(2000);
+		arduinoPort.write("11111111111111111111111111111111\n");
+		delay(2000);
+		arduinoPort.write("00000000000000000000000000000000\n");
+		delay(2000);
+
+	}
 
 	frameRate(30);
 	size(1024, 512);
@@ -116,7 +121,10 @@ void setup() {
 					str += '\n';
 
 					System.out.println(sendNote + ' ' + noteValue);
-					arduinoPort.write(str);
+
+					if (serialEnabled) {
+						arduinoPort.write(str);
+					}
 
 					/*
 					noteTransposition = -24; // some base lowest note (note + this becomes our '0')
@@ -128,6 +136,7 @@ void setup() {
 
 			}
 		};
+
 		sequencer.addMetaEventListener(mel);
 
 		int[] types = new int[128];
@@ -184,6 +193,22 @@ void setup() {
 
 }
 
+void mouseClicked() {
+
+	println("MOUSE CLICKED -- STOP!!");
+	sequencer.stop();
+	delay(1000);
+
+
+	println("REWIND!!");
+	sequencer.setMicrosecondPosition(0);
+	delay(1000);
+
+	println("PLAY!");
+	sequencer.start();
+
+}
+
 void draw() {
 
 	// fade state
@@ -223,7 +248,7 @@ void draw() {
 		lastCheck = millis();
 	}
 
-	if (arduinoPort.available() > 0)  {  // If data is available,
+	if (serialEnabled && arduinoPort.available() > 0)  {  // If data is available,
 		String lastSerialRead = arduinoPort.readStringUntil('\n');         // read it and store it in val
 		// System.out.println(lastSerialRead);
 	}
