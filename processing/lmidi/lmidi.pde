@@ -16,7 +16,7 @@ boolean midiMuted = false;
 
 boolean pedalOn = false;
 
-int noteTransposition = -32; // some base lowest note (note + this becomes our '0')
+int noteTransposition = -50;//-32; // some base lowest note (note + this becomes our '0')
 int postTranspositionLowest = 0;
 int postTranspositionHighest = 32;
 
@@ -62,7 +62,8 @@ void setup() {
 
 	try {
 
-		File midiFile = new File(dataPath("waldstein1-mod1.mid"));
+		// File midiFile = new File(dataPath("waldstein1-mod1.mid"));
+		File midiFile = new File(dataPath("demo.mid"));
 		// File midiFile = new File(dataPath("test.mid"));
 		// File midiFile = new File(dataPath("op48.mid"));
 		sequencer = MidiSystem.getSequencer();
