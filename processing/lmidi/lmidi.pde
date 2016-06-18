@@ -58,6 +58,25 @@ int noteVelocity[] = {
 	 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0  // 128
 }; // 256 notes
 
+
+
+// sequences
+int currentSequenceNumber = 0;
+String sequenceList[] = {
+	"run32-fast1",
+	// "run32-1x",
+	"deb_clai_format0"
+};
+int sequencePostDelayMS[] = {
+	5000,
+	5000
+};
+int sequenceTransposition[] = {
+	-32,
+	-50
+};
+
+
 void setup() {
 
 	if (serialEnabled) {
@@ -67,12 +86,9 @@ void setup() {
 		// could find this automatically by the expected key or something
 		arduinoPort = new Serial(this, arduinoPort.list()[portNum], 115200);
 
+		delay(1000);
 		arduinoPort.write("00000000000000000000000000000000\n");
-		delay(2000);
-		// arduinoPort.write("11111111111111111111111111111111\n");
-		delay(2000);
-		// arduinoPort.write("00000000000000000000000000000000\n");
-		delay(2000);
+		delay(1000);
 
 	}
 
@@ -80,7 +96,23 @@ void setup() {
 	size(1024, 512);
 	colorMode(RGB, 255, 255, 255, 255);
 
-	String setToLoad = "run32-1x";
+	// first set runs immediately!
+	loadNextSet();
+
+}
+
+void allOff() {
+	if (serialEnabled) {
+		arduinoPort.write("00000000000000000000000000000000\n");
+	}
+}
+
+void loadNextSet() {
+
+	// adjust transposition to match current sequence
+	noteTransposition = sequenceTransposition[currentSequenceNumber];
+
+	String setToLoad = sequenceList[currentSequenceNumber]; // "run32-1x";
 	// String setToLoad = "deb_clai_format0";
 
 	// load audio
@@ -217,6 +249,8 @@ void setup() {
 
 	} catch (Exception e){
 
+		System.out.println("Failed to deal with midi");
+
 	}
 
 	// run audio and midi
@@ -231,15 +265,9 @@ void setup() {
 void mouseClicked() {
 
 	println("MOUSE CLICKED -- STOP!!");
-	sequencer.stop();
-	delay(1000);
+	stopPlayback();
 
-	println("REWIND!!");
-	sequencer.setMicrosecondPosition(0);
 	delay(1000);
-
-	println("PLAY!");
-	sequencer.start();
 
 }
 
@@ -294,17 +322,22 @@ void draw() {
 
 		if (audPos >= audio.getMicrosecondLength()) {
 
-			// stop audio
-			audio.stop();
-			audio.close();
-
-			// stop sequencer
-			sequencer.stop();
-			sequencer.close();
-
-			sequencePlaying = false;
+			stopPlayback();
 
 			System.out.println("SEQUENCE IS ENDED");
+
+			allOff();
+
+			if (sequencePostDelayMS[currentSequenceNumber] > 0) {
+				delay(sequencePostDelayMS[currentSequenceNumber]);
+			}
+
+			currentSequenceNumber++;
+			if (currentSequenceNumber > sequenceList.length) {
+				currentSequenceNumber = 0;
+			}
+
+			loadNextSet();
 
 		}
 
@@ -330,6 +363,24 @@ void draw() {
 
 		}
 		*/
+
+	}
+
+}
+
+void stopPlayback() {
+
+	if (sequencePlaying) {
+
+		// stop audio
+		audio.stop();
+		audio.close();
+
+		// stop sequencer
+		sequencer.stop();
+		sequencer.close();
+
+		sequencePlaying = false;
 
 	}
 
