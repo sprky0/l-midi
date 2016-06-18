@@ -1,21 +1,38 @@
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
 import javax.sound.midi.*;
 // import processing.sound.*;
 import processing.serial.*;
 
+Clip audio;
 // SoundFile audio;
 Sequence sequence;
 Sequencer sequencer;
 long lastCheck = 0;
+// how far can the playback drift before we correct it?
+long microsecondOffsetThreshold = 1000;
 
 Serial arduinoPort;
 // int portNum = 0;
 int portNum = 6; // left USB
 
-boolean serialEnabled = false;
-boolean audioMuted = true;
-boolean midiMuted = false;
+boolean serialEnabled = true; // send serial?
+boolean audioMuted = false; // mute audio?
+boolean midiMuted = true; // mute midi?
+boolean drawEnabled = true; // visual representation
+
+boolean sequencePlaying = false;
 
 boolean pedalOn = false;
+
+boolean mapOutOfBoundsNotesToEdge = true;
 
 int noteTransposition = -50;//-32; // some base lowest note (note + this becomes our '0')
 int postTranspositionLowest = 0;
@@ -52,9 +69,9 @@ void setup() {
 
 		arduinoPort.write("00000000000000000000000000000000\n");
 		delay(2000);
-		arduinoPort.write("11111111111111111111111111111111\n");
+		// arduinoPort.write("11111111111111111111111111111111\n");
 		delay(2000);
-		arduinoPort.write("00000000000000000000000000000000\n");
+		// arduinoPort.write("00000000000000000000000000000000\n");
 		delay(2000);
 
 	}
@@ -63,14 +80,27 @@ void setup() {
 	size(1024, 512);
 	colorMode(RGB, 255, 255, 255, 255);
 
-	// audio = new SoundFile(this, "waldstein1.mp3");
+	String setToLoad = "run32-1x";
+	// String setToLoad = "deb_clai_format0";
 
+	// load audio
+	try {
+		AudioInputStream audioIn;
+		audioIn = AudioSystem.getAudioInputStream(new File(dataPath(setToLoad + ".wav")));
+		audio = AudioSystem.getClip();
+		audio.open(audioIn);
+	} catch (UnsupportedAudioFileException e) {
+		println("File type sucked");
+	} catch (IOException e) {
+		println("Couldn't get that file");
+	} catch (LineUnavailableException e) {
+		println("LineUnavailableException ???? ");
+	}
+
+	// load midi
 	try {
 
-		// File midiFile = new File(dataPath("waldstein1-mod1.mid"));
-		File midiFile = new File(dataPath("demo.mid"));
-		// File midiFile = new File(dataPath("test.mid"));
-		// File midiFile = new File(dataPath("op48.mid"));
+		File midiFile = new File(dataPath(setToLoad + ".mid"));
 		sequencer = MidiSystem.getSequencer();
 
 		sequencer.open();
@@ -106,6 +136,14 @@ void setup() {
 					char noteValue = noteState[zip[1]] == 1 ? '1' : '0'; // convert to our char
 					int sendNote = zip[1] + noteTransposition;
 					String str = "";
+
+					if (mapOutOfBoundsNotesToEdge && sendNote > postTranspositionHighest) {
+						sendNote = postTranspositionHighest;
+					}
+					else if (mapOutOfBoundsNotesToEdge && sendNote > postTranspositionHighest) {
+						sendNote = postTranspositionLowest;
+					}
+
 					for (int i = 0; i < postTranspositionHighest; i++) {
 						System.out.println(i + " vs " + sendNote + " orig " + zip[1]);
 						if (i == sendNote) {
@@ -125,12 +163,6 @@ void setup() {
 					if (serialEnabled) {
 						arduinoPort.write(str);
 					}
-
-					/*
-					noteTransposition = -24; // some base lowest note (note + this becomes our '0')
-					postTranspositionLowest = 0;
-					postTranspositionHighest = 32;
-					*/
 
 				}
 
@@ -176,20 +208,23 @@ void setup() {
 			// grab the note data
 			addNotesToTrack(tracks[i], trk);
 			// mute this track so we don't get double sound
-			if (midiMuted)
+			if (midiMuted) {
 				sequencer.setTrackMute(i, true);
+			}
 		}
 
 		sequencer.setSequence(sequence);
 
-		sequencer.start();
-		if (!audioMuted) {
-			// audio.play();
-		}
-
 	} catch (Exception e){
 
 	}
+
+	// run audio and midi
+	sequencer.start();
+	if (!audioMuted) {
+		audio.start();
+	}
+	sequencePlaying = true;
 
 }
 
@@ -198,7 +233,6 @@ void mouseClicked() {
 	println("MOUSE CLICKED -- STOP!!");
 	sequencer.stop();
 	delay(1000);
-
 
 	println("REWIND!!");
 	sequencer.setMicrosecondPosition(0);
@@ -211,46 +245,92 @@ void mouseClicked() {
 
 void draw() {
 
-	// fade state
-	fill(0,0,0);
-	rect(0,0,1024,512);
+	if (drawEnabled) {
 
-	for (int i = 0; i < noteCount; i++) {
-		// System.out.println( notes[i] + " " + i);
-		if (noteVelocity[i] > 0) {
-			if (noteState[i] == 1) {
-				// note is on now
-				fill(255,  i * 2,  i);
-				rect(i * 8, 0, 8, 512);
+		// fade state
+		fill(0,0,0);
+		rect(0,0,1024,512);
+
+		for (int i = 0; i < noteCount; i++) {
+			// System.out.println( notes[i] + " " + i);
+			if (noteVelocity[i] > 0) {
+				if (noteState[i] == 1) {
+					// note is on now
+					fill(255,  i * 2,  i);
+					rect(i * 8, 0, 8, 512);
+				} else {
+					// in this case the note is off but was formerly on
+					// fill(100,  0,  0);
+					// rect(i * 8, 0, 8, 512);
+				}
 			} else {
-				// in this case the note is off but was formerly on
-				// fill(100,  0,  0);
+				// in this case the note was never on
+				// fill(  0,  0,  0);
 				// rect(i * 8, 0, 8, 512);
 			}
-		} else {
-			// in this case the note was never on
-			// fill(  0,  0,  0);
-			// rect(i * 8, 0, 8, 512);
+
+			if ((i + noteTransposition) >= postTranspositionLowest && (i + noteTransposition) < postTranspositionLowest) {
+				fill(  0, 255,   0);
+				rect(i * 8, 0, 8, 512);
+			}
+
 		}
+
 	}
 
-	// optionally deal with loop
-	/*
-	sequencer.stop();
-	sequencer.close();
-	*/
+	if (sequencePlaying && millis() - lastCheck > 500) { // long lastCheck = 0;
 
-	if (millis() - lastCheck > 500) { // long lastCheck = 0;
 		long seqPos = sequencer.getMicrosecondPosition();
-		// long audPos = audio.getMicrosecondPosition();
+		long audPos = audio.getMicrosecondPosition();
 		// todo: check audPos and make sure they're tracking together -- may need to rewrite or wrap SoundFile
-		// System.out.println(seqPos);
+		// System.out.print(seqPos - audPos);
+		// System.out.println( " was the diff");
+
+		if (Math.abs( seqPos - audPos ) > microsecondOffsetThreshold) {
+			sequencer.setMicrosecondPosition( audPos );
+		}
+
+		// deal with sequence ending / moving to next
+
+		if (audPos >= audio.getMicrosecondLength()) {
+
+			// stop audio
+			audio.stop();
+			audio.close();
+
+			// stop sequencer
+			sequencer.stop();
+			sequencer.close();
+
+			sequencePlaying = false;
+
+			System.out.println("SEQUENCE IS ENDED");
+
+		}
+
 		lastCheck = millis();
+
 	}
 
 	if (serialEnabled && arduinoPort.available() > 0)  {  // If data is available,
 		String lastSerialRead = arduinoPort.readStringUntil('\n');         // read it and store it in val
-		// System.out.println(lastSerialRead);
+
+		// lastSerialRead =
+		/*
+		switch(lastSerialRead) {
+
+			default:
+			System.out.println("No clue: Artuino said");
+			System.out.println(lastSerialRead);
+			break;
+
+			case "thanks":
+			System.out.println("Arduino says: thanks / command ok!");
+			break;
+
+		}
+		*/
+
 	}
 
 }
@@ -286,3 +366,45 @@ public static final void addNotesToTrack(Track track, Track trk) throws InvalidM
 		}
 	}
 }
+
+
+
+
+
+
+
+/*
+
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+public class playmusic implements Runnable {
+	public void main(String[] args){
+		Thread t = new Thread(new playmusic());
+		t.start();
+	}
+
+	@Override
+	public void run() {
+		AudioInputStream audioIn;
+		try {
+			audioIn = AudioSystem.getAudioInputStream(new File("test.wav"));
+			Clip clip;
+			clip = AudioSystem.getClip();
+			clip.open(audioIn);
+			clip.start();
+			Thread.sleep(clip.getMicrosecondLength()/1000);
+		} catch (Exception e1) { // UnsupportedAudioFileException || IOException || LineUnavailableException || InterruptedException
+			e1.printStackTrace();
+		}
+	}
+}
+
+
+*/
