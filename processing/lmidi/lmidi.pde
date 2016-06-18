@@ -20,9 +20,10 @@ long lastCheck = 0;
 long microsecondOffsetThreshold = 1000;
 
 Serial arduinoPort;
-// int portNum = 0;
-int portNum = 6; // left USB
+int portNum = 0;
+// int portNum = 6; // left USB
 
+boolean debugEnabled = false; // send serial?
 boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
 boolean midiMuted = true; // mute midi?
@@ -146,7 +147,7 @@ void loadNextSet() {
 				byte[] zip = meta.getData();
 
 				// 0 = ???, 1 = note number, 2 = velocity ?
-				// System.out.println("MEL - type: " + type + " " + zip[0] + " " + zip[1] + " " + zip[2]);
+				// //System.out.println("MEL - type: " + type + " " + zip[0] + " " + zip[1] + " " + zip[2]);
 
 				// note off or note interrupted by silent note
 				if (type == 2 || (type == 1 && zip[2] == 0)) {
@@ -177,12 +178,12 @@ void loadNextSet() {
 					}
 
 					for (int i = 0; i < postTranspositionHighest; i++) {
-						System.out.println(i + " vs " + sendNote + " orig " + zip[1]);
+						//System.out.println(i + " vs " + sendNote + " orig " + zip[1]);
 						if (i == sendNote) {
-							System.out.println("hit em");
-							// System.out.println(str);
-							System.out.println(noteState[zip[1]]);
-							System.out.println(noteValue);
+							//System.out.println("hit em");
+							// //System.out.println(str);
+							//System.out.println(noteState[zip[1]]);
+							//System.out.println(noteValue);
 							str += noteValue;
 						} else {
 							str += ' ';
@@ -190,7 +191,7 @@ void loadNextSet() {
 					}
 					str += '\n';
 
-					System.out.println(sendNote + ' ' + noteValue);
+					//System.out.println(sendNote + ' ' + noteValue);
 
 					if (serialEnabled) {
 						arduinoPort.write(str);
@@ -212,11 +213,11 @@ void loadNextSet() {
 			public void controlChange(ShortMessage event) {
 				int command = event.getCommand();
 				if (command == ShortMessage.NOTE_ON) {
-					// System.out.println("CEL - note on!");
+					// //System.out.println("CEL - note on!");
 				} else if (command == ShortMessage.NOTE_OFF) {
-					// System.out.println("CEL - note off!");
+					// //System.out.println("CEL - note off!");
 				} else {
-					// System.out.println("CEL - unknown: " + event.getData1() + " " + event.getData2());
+					// //System.out.println("CEL - unknown: " + event.getData1() + " " + event.getData2());
 					// keep track of the pedal state
 					if (pedalOn == false && event.getData1() == 64 && event.getData2() == 127) {
 						pedalOn = true;
@@ -232,7 +233,7 @@ void loadNextSet() {
 				sb.append(ii);
 				sb.append(", ");
 		}
-		// System.out.println("Listening to: " + sb.toString());
+		// //System.out.println("Listening to: " + sb.toString());
 
 		Track[] tracks = sequence.getTracks();
 		Track trk = sequence.createTrack();
@@ -249,7 +250,7 @@ void loadNextSet() {
 
 	} catch (Exception e){
 
-		System.out.println("Failed to deal with midi");
+		//System.out.println("Failed to deal with midi");
 
 	}
 
@@ -280,7 +281,7 @@ void draw() {
 		rect(0,0,1024,512);
 
 		for (int i = 0; i < noteCount; i++) {
-			// System.out.println( notes[i] + " " + i);
+			// //System.out.println( notes[i] + " " + i);
 			if (noteVelocity[i] > 0) {
 				if (noteState[i] == 1) {
 					// note is on now
@@ -311,8 +312,8 @@ void draw() {
 		long seqPos = sequencer.getMicrosecondPosition();
 		long audPos = audio.getMicrosecondPosition();
 		// todo: check audPos and make sure they're tracking together -- may need to rewrite or wrap SoundFile
-		// System.out.print(seqPos - audPos);
-		// System.out.println( " was the diff");
+		// //System.out.print(seqPos - audPos);
+		// //System.out.println( " was the diff");
 
 		if (Math.abs( seqPos - audPos ) > microsecondOffsetThreshold) {
 			sequencer.setMicrosecondPosition( audPos );
@@ -324,7 +325,7 @@ void draw() {
 
 			stopPlayback();
 
-			System.out.println("SEQUENCE IS ENDED");
+			//System.out.println("SEQUENCE IS ENDED");
 
 			allOff();
 
@@ -353,12 +354,12 @@ void draw() {
 		switch(lastSerialRead) {
 
 			default:
-			System.out.println("No clue: Artuino said");
-			System.out.println(lastSerialRead);
+			//System.out.println("No clue: Artuino said");
+			//System.out.println(lastSerialRead);
 			break;
 
 			case "thanks":
-			System.out.println("Arduino says: thanks / command ok!");
+			//System.out.println("Arduino says: thanks / command ok!");
 			break;
 
 		}
