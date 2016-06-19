@@ -20,8 +20,8 @@ long lastCheck = 0;
 long microsecondOffsetThreshold = 1000;
 
 Serial arduinoPort;
-int portNum = 0;
-// int portNum = 6; // left USB
+// int portNum = 0;
+int portNum = 0; // left USB
 
 boolean debugEnabled = false; // send serial?
 boolean serialEnabled = true; // send serial?
@@ -82,9 +82,17 @@ void setup() {
 
 	if (serialEnabled) {
 
-		println(arduinoPort.list());
-
+		// println(arduinoPort.list());
 		// could find this automatically by the expected key or something
+
+		String[] ports = arduinoPort.list();
+		println(ports);
+
+		for(int i = 0; i < ports.length; i++) {
+ 			if (ports[i] == "/dev/tty.usbmodem1411")
+				portNum = i;
+		}
+
 		arduinoPort = new Serial(this, arduinoPort.list()[portNum], 115200);
 
 		delay(1000);
