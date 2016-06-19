@@ -112,7 +112,7 @@ void setup() {
 	colorMode(RGB, 255, 255, 255, 255);
 
 	// first set runs immediately!
-	loadNextSet();
+	loadSet();
 
 }
 
@@ -122,13 +122,12 @@ void allOff() {
 	}
 }
 
-void loadNextSet() {
+void loadSet() {
 
 	// adjust transposition to match current sequence
 	noteTransposition = sequenceTransposition[currentSequenceNumber];
 
-	String setToLoad = sequenceList[currentSequenceNumber]; // "run32-1x";
-	// String setToLoad = "deb_clai_format0";
+	String setToLoad = sequenceList[currentSequenceNumber];
 
 	// load audio
 	try {
@@ -338,9 +337,6 @@ void draw() {
 		if (audPos >= audio.getMicrosecondLength()) {
 
 			stopPlayback();
-
-			//System.out.println("SEQUENCE IS ENDED");
-
 			allOff();
 
 			if (sequencePostDelayMS[currentSequenceNumber] > 0) {
@@ -352,7 +348,7 @@ void draw() {
 				currentSequenceNumber = 0;
 			}
 
-			loadNextSet();
+			loadSet();
 
 		}
 
