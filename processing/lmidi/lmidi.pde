@@ -20,13 +20,13 @@ long lastCheck = 0;
 long microsecondOffsetThreshold = 1000;
 
 Serial arduinoPort;
-// int portNum = 0;
-int portNum = 6; // left USB
+int portNum = 0;
+// int portNum = 6; // left USB
 
 boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
 boolean midiMuted = true; // mute midi?
-boolean drawEnabled = true; // visual representation
+boolean drawEnabled = false; // true; // visual representation
 
 boolean sequencePlaying = false;
 
