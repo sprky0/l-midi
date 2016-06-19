@@ -65,7 +65,6 @@ int noteVelocity[] = {
 int currentSequenceNumber = 0;
 String sequenceList[] = {
 	"run32-fast1",
-	// "run32-1x",
 	"deb_clai_format0"
 };
 int sequencePostDelayMS[] = {
@@ -344,7 +343,7 @@ void draw() {
 			}
 
 			currentSequenceNumber++;
-			if (currentSequenceNumber > sequenceList.length) {
+			if (currentSequenceNumber >= sequenceList.length) {
 				currentSequenceNumber = 0;
 			}
 
