@@ -8,13 +8,15 @@ case "$1" in
   start)
     echo "Starting lmidi"
     # run application you want to start
-		cd /home/pi/l-midi/processing
-		COUNTER=0
-		while [ 1 ]; do
-		   echo Run $COUNTER
-		   DISPLAY=:0 processing-java --sketch=lmidi --present
-		   let COUNTER=COUNTER+1
-		done
+    su pi <<'EOC'
+    cd /home/pi/l-midi/processing
+    COUNTER=0
+    while [ 1 ]; do
+        echo Run $COUNTER
+        DISPLAY=:0 processing-java --sketch=lmidi --present
+    let COUNTER=COUNTER+1
+    done
+EOC
     ;;
   stop)
     echo "Stopping lmidi"
