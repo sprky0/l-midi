@@ -1,5 +1,4 @@
 #!/bin/bash
-su pi
 cd /home/pi/l-midi/processing
 COUNTER=0
 while [ 1 ]; do
