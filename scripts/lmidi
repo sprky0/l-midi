@@ -1,16 +1,6 @@
 #! /bin/sh
 # /etc/init.d/lmidi
 
-### BEGIN INIT INFO
-# Provides:          lmidi
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Start lmidi application on boot
-# Description:       This launches the lmidi application which requires sends serial data to a connected Arduino.
-### END INIT INFO
-
 # If you want a command to always run, put it here
 
 # Carry out specific functions when asked to by the system
@@ -18,7 +8,13 @@ case "$1" in
   start)
     echo "Starting lmidi"
     # run application you want to start
-    /home/pi/l-midi/scripts/lmidi-start.sh
+		cd /home/pi/l-midi/processing
+		COUNTER=0
+		while [ 1 ]; do
+		   echo Run $COUNTER
+		   DISPLAY=:0 processing-java --sketch=lmidi --present
+		   let COUNTER=COUNTER+1
+		done
     ;;
   stop)
     echo "Stopping lmidi"
