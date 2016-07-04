@@ -393,7 +393,7 @@ void draw() {
 
 		textSize(32);
 		int reading = GPIO.digitalRead(24);
-		text(reading, 128, 128);
+		text(reading, 618, 128);
 		fill(0, 0, 0);
 
 		// @todo debounce
