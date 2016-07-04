@@ -402,7 +402,7 @@ void draw() {
 			if (whatClientSaid != null) {
 				println(thisClient.ip() + "t" + whatClientSaid);
 				if (whatClientSaid == 'playpause') {
-					thisClient.write('thanks');
+					thisClient.writeln("thanks\n");
 				}
 			}
 		}
