@@ -1,6 +1,7 @@
-#!/bin/python  
+#!/bin/python
 # Simple script for shutting down the raspberry Pi at the press of a button.
 # by Inderpreet Singh
+# @link https://www.element14.com/community/docs/DOC-78055/l/adding-a-shutdown-button-to-the-raspberry-pi-b
 
 import RPi.GPIO as GPIO
 import time

@@ -317,6 +317,14 @@ void draw() {
 
 	}
 
+	if (sequencePlaying) {
+		fill(  0, 255,   0);
+		rect(0, 0, 128, 512);
+	} else {
+		fill(255,  0,   0);
+		rect(0, 0, 128, 512);
+	}
+
 	if (sequencePlaying && millis() - lastCheck > 500) { // long lastCheck = 0;
 
 		long seqPos = sequencer.getMicrosecondPosition();
