@@ -8,6 +8,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import javax.sound.midi.*;
+
+import processing.io.*;
 import processing.serial.*;
 
 Clip audio;
@@ -22,6 +24,7 @@ int portNum = 0; // top left RaspberryPI USB port
 // int portNum = 6; // left USB
 
 // boolean debugEnabled = false; // send serial?
+boolean ioEnabled = true; // deal with GPIO ?
 boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
 boolean midiMuted = true; // mute midi?
@@ -76,6 +79,10 @@ int sequenceTransposition[] = {
 
 
 void setup() {
+
+	if (ioEnabled) {
+		GPIO.pinMode(24, GPIO.INPUT);
+	}
 
 	if (serialEnabled) {
 
@@ -382,6 +389,24 @@ void draw() {
 
 	}
 
+	if (ioEnabled) {
+
+		textSize(32);
+		text(GPIO.digitalRead(24), 10, 30);
+
+		// @todo debounce
+		/*
+			if (GPIO.digitalRead(24) == GPIO.HIGH && sequencePlaying) {
+				stopPlayback();
+			}
+			*/
+
+			/* else if () {
+				GPIO.digitalRead(24) == GPIO.HIGH && sequencePlaying
+			} */
+
+	}
+
 }
 
 void stopPlayback() {
@@ -434,43 +459,32 @@ public static final void addNotesToTrack(Track track, Track trk) throws InvalidM
 	}
 }
 
-
-
-
-
-
-
 /*
 
-import java.io.File;
-import java.io.IOException;
+GPIO notes from p5.org
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import processing.io.*;
 
-public class playmusic implements Runnable {
-	public void main(String[] args){
-		Thread t = new Thread(new playmusic());
-		t.start();
-	}
+void setup() {
+  GPIO.pinMode(4, GPIO.INPUT);
 
-	@Override
-	public void run() {
-		AudioInputStream audioIn;
-		try {
-			audioIn = AudioSystem.getAudioInputStream(new File("test.wav"));
-			Clip clip;
-			clip = AudioSystem.getClip();
-			clip.open(audioIn);
-			clip.start();
-			Thread.sleep(clip.getMicrosecondLength()/1000);
-		} catch (Exception e1) { // UnsupportedAudioFileException || IOException || LineUnavailableException || InterruptedException
-			e1.printStackTrace();
-		}
-	}
+  // On the Raspberry Pi, GPIO 4 is pin 7 on the pin header,
+  // located on the fourth row, above one of the ground pins
+  // For this particular board one could also write:
+  // GPIO.pinMode(RPI.PIN7, GPIO.INPUT);
+
+  frameRate(0.5);
+}
+
+void draw() {
+  // sense the input pin
+  if (GPIO.digitalRead(4) == GPIO.HIGH) {
+    fill(255);
+  } else {
+    fill(204);
+  }
+  stroke(255);
+  ellipse(width/2, height/2, width*0.75, height*0.75);
 }
 
 
