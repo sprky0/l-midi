@@ -401,8 +401,8 @@ void draw() {
 			String whatClientSaid = thisClient.readString();
 			if (whatClientSaid != null) {
 				println(thisClient.ip() + "t" + whatClientSaid);
-				if (whatClientSaid == 'playpause') {
-					thisClient.write('thanks');
+				if (whatClientSaid == "playpause") {	
+					// thisClient.write('thanks');
 				}
 			}
 		}
