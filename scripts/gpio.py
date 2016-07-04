@@ -1,14 +1,11 @@
 #!/bin/python
-# Simple script for shutting down the raspberry Pi at the press of a button.
-# by Inderpreet Singh
-# @link https://www.element14.com/community/docs/DOC-78055/l/adding-a-shutdown-button-to-the-raspberry-pi-b
 
 import RPi.GPIO as GPIO
 import time
 import os
+import socket
+import sys
 
-# Use the Broadcom SOC Pin numbers
-# Setup the Pin with Internal pullups enabled and PIN in reading mode.
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.setup(24, GPIO.IN, pull_up_down = GPIO.PUD_UP)
