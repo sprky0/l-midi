@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.IOException;
 
+import processing.net.*;
+
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -11,6 +13,8 @@ import javax.sound.midi.*;
 
 import processing.io.*;
 import processing.serial.*;
+
+Server myServer;
 
 Clip audio;
 Sequence sequence;
@@ -81,7 +85,7 @@ int sequenceTransposition[] = {
 void setup() {
 
 	if (ioEnabled) {
-		GPIO.pinMode(24, GPIO.INPUT);
+		myServer = new Server(this, 7070);
 	}
 
 	if (serialEnabled) {
@@ -390,25 +394,19 @@ void draw() {
 	}
 
 	if (ioEnabled) {
-
-		textSize(32);
-		int reading = GPIO.digitalRead(24);
-		text(reading, 618, 128);
-		fill(0, 0, 0);
-
-		// @todo debounce
-		/*
-			if (GPIO.digitalRead(24) == GPIO.HIGH && sequencePlaying) {
-				stopPlayback();
+		// Get the next available client
+		Client thisClient = myServer.available();
+		// If the client is not null, and says something, display what it said
+		if (thisClient !=null) {
+			String whatClientSaid = thisClient.readString();
+			if (whatClientSaid != null) {
+				println(thisClient.ip() + "t" + whatClientSaid);
+				if (whatClientSaid == 'playpause') {
+					thisClient.write('thanks');
+				}
 			}
-			*/
-
-			/* else if () {
-				GPIO.digitalRead(24) == GPIO.HIGH && sequencePlaying
-			} */
-
+		}
 	}
-
 }
 
 void stopPlayback() {
