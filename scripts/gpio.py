@@ -14,7 +14,7 @@ GPIO.setup(24, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 def Shutdown(channel):
     os.system("sudo shutdown -h now")
 
-def PlayPause(channel):
+def SendMessageToP5(message):
     try:
         # Open TCP/IP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +23,7 @@ def PlayPause(channel):
         print >>sys.stderr, 'connecting to %s port %s' % server_address
         sock.connect(server_address)
         # Send data
-        message = 'playpause'
+        # message = 'playpause'
         print >>sys.stderr, 'sending "%s"' % message
         sock.sendall(message)
 
@@ -48,6 +48,16 @@ def PlayPause(channel):
     sock.connect(server_address)
     print >>sys.stderr, 'sending playpause'
     sock.write('playpause\n')
+
+def PlayPause():
+    SendMessageToP5('playpause');
+
+def NextSequence():
+    SendMessageToP5('prev');
+
+def PrevSequence():
+    SendMessageToP5('next');
+
 
 # Add our function to execute when the button pressed event happens
 GPIO.add_event_detect(18, GPIO.FALLING, callback = Shutdown, bouncetime = 2000)
