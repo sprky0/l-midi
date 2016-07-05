@@ -69,8 +69,10 @@ int noteVelocity[] = {
 // sequences
 int currentSequenceNumber = 0;
 String sequenceList[] = {
-	"run32-fast1",
-	"deb_clai_format0"
+	"run32-1x",
+	"run32-1x"
+	// "run32-fast1",
+	// "deb_clai_format0"
 };
 int sequencePostDelayMS[] = {
 	5000,
@@ -133,6 +135,17 @@ void allOff() {
 }
 
 void loadSet() {
+
+	System.out.println("loadSet called");
+
+	if (null != audio) {
+		audio.stop();
+		audio.close();
+	}
+	if (null != sequencer) {
+		sequencer.stop();
+		sequencer.close();
+	}
 
 	// adjust transposition to match current sequence
 	noteTransposition = sequenceTransposition[currentSequenceNumber];
@@ -266,12 +279,14 @@ void loadSet() {
 
 	} catch (Exception e){
 
-		//System.out.println("Failed to deal with midi");
+		System.out.println("Failed to deal with midi");
 
 	}
 
 	// unlinking these two
 	// startPlayback();
+
+	System.out.println("loadSet finished");
 
 }
 
@@ -287,6 +302,8 @@ void mouseClicked() {
 void draw() {
 
 	if (drawEnabled) {
+
+		noStroke();
 
 		// fade state
 		fill(0,0,0);
@@ -320,11 +337,14 @@ void draw() {
 	}
 
 	if (sequencePlaying) {
+		noStroke();
 		fill(  0, 255,   0);
-		rect(0, 0, 128, 512);
+		rect(0, 0, 127, 511);
+		// 1024, 512
 	} else {
+		noStroke();
 		fill(255,  0,   0);
-		rect(0, 0, 128, 512);
+		rect(0, 0, 127, 511);
 	}
 
 	if (sequencePlaying && millis() - lastCheck > 500) { // long lastCheck = 0;
@@ -445,14 +465,11 @@ void stopPlayback() {
 
 		// stop audio
 		audio.stop();
-		// audio.close();
-
 		// stop sequencer
 		sequencer.stop();
 		// sequencer.close();
-
 		sequencePlaying = false;
-
+		// String sequenceList[] = {currentSequenceNumber
 	}
 
 }
@@ -473,17 +490,21 @@ void startPlayback() {
 }
 
 void prevSet() {
+	System.out.print("prevSet called - ");
 	currentSequenceNumber--;
 	if (currentSequenceNumber < 0) {
 		currentSequenceNumber = sequenceList.length - 1;
 	}
+	System.out.println(currentSequenceNumber);
 }
 
 void nextSet() {
+	System.out.println("nextSet called - ");
 	currentSequenceNumber++;
 	if (currentSequenceNumber >= sequenceList.length) {
 		currentSequenceNumber = 0;
 	}
+	System.out.print(currentSequenceNumber);
 }
 
 /**
