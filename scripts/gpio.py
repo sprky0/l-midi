@@ -16,7 +16,7 @@ def Shutdown(channel):
 
 def SendMessageToP5(message):
     try:
-	response = 'thanks'
+        response = 'thanks'
         # Open TCP/IP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Connect the socket to the port where the server is listening
@@ -59,7 +59,6 @@ def NextSequence(channel):
 def PrevSequence(channel):
     SendMessageToP5('next');
 
-
 # Add our function to execute when the button pressed event happens
 GPIO.add_event_detect(18, GPIO.FALLING, callback = Shutdown, bouncetime = 2000)
 GPIO.add_event_detect(24, GPIO.FALLING, callback = PlayPause, bouncetime = 2000)
@@ -67,6 +66,3 @@ GPIO.add_event_detect(24, GPIO.FALLING, callback = PlayPause, bouncetime = 2000)
 # Now wait!
 while 1:
     time.sleep(1)
-
-import socket
-import sys
