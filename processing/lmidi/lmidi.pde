@@ -11,7 +11,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import javax.sound.midi.*;
 
-import processing.io.*;
+// import processing.io.*;
 import processing.serial.*;
 
 Server myServer;
@@ -93,8 +93,9 @@ void setup() {
 		// println(arduinoPort.list());
 		// could find this automatically by the expected key or something
 		// eg: String tester = "/dev/tty.usbmodem1411"; -- this doesn't work
-		String[] ports = arduinoPort.list();
+		// how about sanitized a little? ... .trim() ? eh
 
+		String[] ports = arduinoPort.list();
 
 		// for(int i = 0; i < ports.length; i++) {
 		// 	if (ports[i] == tester) {
@@ -105,8 +106,8 @@ void setup() {
 		// 		println("|" + "/dev/tty.usbmodem1411" + "|");
 		// 	}
 		// }
-
 		// arduinoPort.list()
+
 		arduinoPort = new Serial(this, ports[portNum], 115200);
 
 		delay(1000);
@@ -121,6 +122,7 @@ void setup() {
 
 	// first set runs immediately!
 	loadSet();
+	startPlayback();
 
 }
 
@@ -144,11 +146,11 @@ void loadSet() {
 		audio = AudioSystem.getClip();
 		audio.open(audioIn);
 	} catch (UnsupportedAudioFileException e) {
-		println("File type sucked");
+		println("Issue loading audio - File type sucked");
 	} catch (IOException e) {
-		println("Couldn't get that file");
+		println("Issue loading audio - Couldn't get that file");
 	} catch (LineUnavailableException e) {
-		println("LineUnavailableException ???? ");
+		println("Issue loading audio - LineUnavailableException (???)");
 	}
 
 	// load midi
@@ -199,20 +201,13 @@ void loadSet() {
 					}
 
 					for (int i = 0; i < postTranspositionHighest; i++) {
-						//System.out.println(i + " vs " + sendNote + " orig " + zip[1]);
 						if (i == sendNote) {
-							//System.out.println("hit em");
-							// //System.out.println(str);
-							//System.out.println(noteState[zip[1]]);
-							//System.out.println(noteValue);
 							str += noteValue;
 						} else {
 							str += ' ';
 						}
 					}
 					str += '\n';
-
-					//System.out.println(sendNote + ' ' + noteValue);
 
 					if (serialEnabled) {
 						arduinoPort.write(str);
@@ -275,12 +270,8 @@ void loadSet() {
 
 	}
 
-	// run audio and midi
-	sequencer.start();
-	if (!audioMuted) {
-		audio.start();
-	}
-	sequencePlaying = true;
+	// unlinking these two
+	// startPlayback();
 
 }
 
@@ -359,12 +350,10 @@ void draw() {
 				delay(sequencePostDelayMS[currentSequenceNumber]);
 			}
 
-			currentSequenceNumber++;
-			if (currentSequenceNumber >= sequenceList.length) {
-				currentSequenceNumber = 0;
-			}
-
+			// autoadvance:
+			nextSet();
 			loadSet();
+			startPlayback();
 
 		}
 
@@ -400,11 +389,50 @@ void draw() {
 		if (thisClient !=null) {
 			String whatClientSaid = thisClient.readString();
 			if (whatClientSaid != null) {
-				println(thisClient.ip() + "t" + whatClientSaid);
-				if (whatClientSaid == "playpause") {	
+
+				switch(whatClientSaid.trim()) {
+
+					default:
+					println(thisClient.ip() + " [" + whatClientSaid + "]");
+					break;
+
+					case "prev":
+					if (sequencePlaying) {
+						stopPlayback();
+					}
+					prevSet(); // maybe we should make a simplified "start playback" method
+					loadSet();
+					startPlayback();
 					thisClient.write("thanks\n");
-				} else {
-					thisClient.write(whatClientSaid);
+					println("prev received, sent thanks");
+					break;
+
+					case "next":
+					if (sequencePlaying) {
+						stopPlayback();
+					}
+					nextSet();
+					loadSet();
+					startPlayback();
+					thisClient.write("thanks\n");
+					println("next received, sent thanks");
+					break;
+
+					case "playpause":
+					if (sequencePlaying) {
+						stopPlayback();
+					} else {
+						startPlayback();
+					}
+					thisClient.write("thanks\n");
+					println("playpause received, sent thanks");
+					break;
+
+					case "quit":
+					thisClient.write("bye\n");
+					thisClient.stop();
+					break;
+
 				}
 			}
 		}
@@ -417,16 +445,45 @@ void stopPlayback() {
 
 		// stop audio
 		audio.stop();
-		audio.close();
+		// audio.close();
 
 		// stop sequencer
 		sequencer.stop();
-		sequencer.close();
+		// sequencer.close();
 
 		sequencePlaying = false;
 
 	}
 
+}
+
+void startPlayback() {
+
+	// rewind!
+	sequencer.setMicrosecondPosition(0);
+	audio.setMicrosecondPosition(0);
+
+	// run audio and midi
+	sequencer.start();
+	if (!audioMuted) {
+		audio.start();
+	}
+	sequencePlaying = true;
+
+}
+
+void prevSet() {
+	currentSequenceNumber--;
+	if (currentSequenceNumber < 0) {
+		currentSequenceNumber = sequenceList.length - 1;
+	}
+}
+
+void nextSet() {
+	currentSequenceNumber++;
+	if (currentSequenceNumber >= sequenceList.length) {
+		currentSequenceNumber = 0;
+	}
 }
 
 /**
