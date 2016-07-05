@@ -16,6 +16,7 @@ def Shutdown(channel):
 
 def SendMessageToP5(message):
     try:
+	response = 'thanks'
         # Open TCP/IP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Connect the socket to the port where the server is listening
@@ -29,7 +30,7 @@ def SendMessageToP5(message):
 
         # Look for the response
         amount_received = 0
-        amount_expected = len(message)
+        amount_expected = len(response)
 
         while amount_received < amount_expected:
             data = sock.recv(16)
@@ -49,13 +50,13 @@ def SendMessageToP5(message):
     print >>sys.stderr, 'sending playpause'
     sock.write('playpause\n')
 
-def PlayPause():
+def PlayPause(channel):
     SendMessageToP5('playpause');
 
-def NextSequence():
+def NextSequence(channel):
     SendMessageToP5('prev');
 
-def PrevSequence():
+def PrevSequence(channel):
     SendMessageToP5('next');
 
 
