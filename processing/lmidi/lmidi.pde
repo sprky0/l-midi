@@ -122,6 +122,7 @@ void setup() {
 
 	// first set runs immediately!
 	loadSet();
+	startPlayback();
 
 }
 
@@ -269,12 +270,8 @@ void loadSet() {
 
 	}
 
-	// run audio and midi
-	sequencer.start();
-	if (!audioMuted) {
-		audio.start();
-	}
-	sequencePlaying = true;
+	// unlinking these two
+	// startPlayback();
 
 }
 
@@ -353,12 +350,10 @@ void draw() {
 				delay(sequencePostDelayMS[currentSequenceNumber]);
 			}
 
-			currentSequenceNumber++;
-			if (currentSequenceNumber >= sequenceList.length) {
-				currentSequenceNumber = 0;
-			}
-
+			// autoadvance:
+			nextSet();
 			loadSet();
+			startPlayback();
 
 		}
 
@@ -398,18 +393,45 @@ void draw() {
 				switch(whatClientSaid.trim()) {
 
 					default:
-						println(thisClient.ip() + " [" + whatClientSaid + "]");
-						break;
+					println(thisClient.ip() + " [" + whatClientSaid + "]");
+					break;
+
+					case "prev":
+					if (sequencePlaying) {
+						stopPlayback();
+					}
+					prevSet(); // maybe we should make a simplified "start playback" method
+					loadSet();
+					startPlayback();
+					thisClient.write("thanks\n");
+					println("prev received, sent thanks");
+					break;
+
+					case "next":
+					if (sequencePlaying) {
+						stopPlayback();
+					}
+					nextSet();
+					loadSet();
+					startPlayback();
+					thisClient.write("thanks\n");
+					println("next received, sent thanks");
+					break;
 
 					case "playpause":
-						if (sequencePlaying) {
-							stopPlayback();
-						} else {
-							loadSet(); // maybe we should make a simplified "start playback" method
-						}
-						thisClient.write("thanks\n");
-						println("playpause received, sent thanks");
-						break;
+					if (sequencePlaying) {
+						stopPlayback();
+					} else {
+						startPlayback();
+					}
+					thisClient.write("thanks\n");
+					println("playpause received, sent thanks");
+					break;
+
+					case "quit":
+					thisClient.write("bye\n");
+					thisClient.stop();
+					break;
 
 				}
 			}
@@ -423,16 +445,45 @@ void stopPlayback() {
 
 		// stop audio
 		audio.stop();
-		audio.close();
+		// audio.close();
 
 		// stop sequencer
 		sequencer.stop();
-		sequencer.close();
+		// sequencer.close();
 
 		sequencePlaying = false;
 
 	}
 
+}
+
+void startPlayback() {
+
+	// rewind!
+	sequencer.setMicrosecondPosition(0);
+	audio.setMicrosecondPosition(0);
+
+	// run audio and midi
+	sequencer.start();
+	if (!audioMuted) {
+		audio.start();
+	}
+	sequencePlaying = true;
+
+}
+
+void prevSet() {
+	currentSequenceNumber--;
+	if (currentSequenceNumber < 0) {
+		currentSequenceNumber = sequenceList.length - 1;
+	}
+}
+
+void nextSet() {
+	currentSequenceNumber++;
+	if (currentSequenceNumber >= sequenceList.length) {
+		currentSequenceNumber = 0;
+	}
 }
 
 /**
