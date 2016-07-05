@@ -24,8 +24,8 @@ long lastCheck = 0;
 long microsecondOffsetThreshold = 1000;
 
 Serial arduinoPort;
-// int portNum = 0; // top left RaspberryPI USB port
-int portNum = 6; // left USB
+int portNum = 0; // top left RaspberryPI USB port
+// int portNum = 6; // left USB
 
 // boolean debugEnabled = false; // send serial?
 boolean ioEnabled = true; // deal with GPIO ?
