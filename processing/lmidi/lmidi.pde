@@ -75,12 +75,13 @@ int currentSequenceNumber = 0;
 String sequenceList[] = {
 	// "run32-1x",
 	// "run32-1x",
-	"run32-fast1",
+	// "run32-fast1",
+	"runs-v1",
 	"deb_clai_format0"
 };
 int sequencePostDelayMS[] = {
 	5000,
-	5000
+	1000
 };
 int sequenceTransposition[] = {
 	-32,
