@@ -5,6 +5,7 @@ import processing.net.*;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -31,12 +32,15 @@ int portNum = 0; // top left RaspberryPI USB port
 boolean ioEnabled = true; // deal with GPIO ?
 boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
+boolean audioDisabled = false; // mute audio?
 boolean midiMuted = true; // mute midi?
-boolean drawEnabled = false; // true; // visual representation
+boolean drawEnabled = true; // true; // visual representation
 
 boolean sequencePlaying = false;
 
 boolean pedalOn = false;
+
+int loopCount = 0;
 
 boolean mapOutOfBoundsNotesToEdge = true;
 
@@ -69,10 +73,10 @@ int noteVelocity[] = {
 // sequences
 int currentSequenceNumber = 0;
 String sequenceList[] = {
-	"run32-1x",
-	"run32-1x"
-	// "run32-fast1",
-	// "deb_clai_format0"
+	// "run32-1x",
+	// "run32-1x",
+	"run32-fast1",
+	"deb_clai_format0"
 };
 int sequencePostDelayMS[] = {
 	5000,
@@ -158,6 +162,12 @@ void loadSet() {
 		audioIn = AudioSystem.getAudioInputStream(new File(dataPath(setToLoad + ".wav")));
 		audio = AudioSystem.getClip();
 		audio.open(audioIn);
+
+		if (audioMuted) {
+			FloatControl audiGainControl = (FloatControl) audio.getControl(FloatControl.Type.MASTER_GAIN);
+			audiGainControl.setValue(-80.0f); // reduction in DB
+		}
+
 	} catch (UnsupportedAudioFileException e) {
 		println("Issue loading audio - File type sucked");
 	} catch (IOException e) {
@@ -364,7 +374,6 @@ void draw() {
 		if (audPos >= audio.getMicrosecondLength()) {
 
 			stopPlayback();
-			allOff();
 
 			if (sequencePostDelayMS[currentSequenceNumber] > 0) {
 				delay(sequencePostDelayMS[currentSequenceNumber]);
@@ -461,7 +470,13 @@ void draw() {
 
 void stopPlayback() {
 
+	System.out.println("stopPlayback called");
+
+	allOff();
+
 	if (sequencePlaying) {
+
+		System.out.println("stopping");
 
 		// stop audio
 		audio.stop();
@@ -476,13 +491,15 @@ void stopPlayback() {
 
 void startPlayback() {
 
+	System.out.println("startPlayback");
+
 	// rewind!
 	sequencer.setMicrosecondPosition(0);
 	audio.setMicrosecondPosition(0);
 
 	// run audio and midi
 	sequencer.start();
-	if (!audioMuted) {
+	if (!audioDisabled) {
 		audio.start();
 	}
 	sequencePlaying = true;
@@ -490,7 +507,7 @@ void startPlayback() {
 }
 
 void prevSet() {
-	System.out.print("prevSet called - ");
+	System.out.println("prevSet called");
 	currentSequenceNumber--;
 	if (currentSequenceNumber < 0) {
 		currentSequenceNumber = sequenceList.length - 1;
@@ -499,12 +516,14 @@ void prevSet() {
 }
 
 void nextSet() {
-	System.out.println("nextSet called - ");
+	System.out.println("nextSet called");
 	currentSequenceNumber++;
 	if (currentSequenceNumber >= sequenceList.length) {
 		currentSequenceNumber = 0;
+		loopCount++;
+		System.out.println("This is our " + loopCount + " loop -- back to the beginning!");
 	}
-	System.out.print(currentSequenceNumber);
+	System.out.println(currentSequenceNumber);
 }
 
 /**
