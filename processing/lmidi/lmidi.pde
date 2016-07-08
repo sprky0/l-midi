@@ -29,6 +29,7 @@ int portNum = 0; // top left RaspberryPI USB port
 // int portNum = 6; // left USB
 
 // boolean debugEnabled = false; // send serial?
+boolean verboseLogging = true; // send serial?
 boolean ioEnabled = true; // deal with GPIO ?
 boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
@@ -91,11 +92,17 @@ int sequenceTransposition[] = {
 
 void setup() {
 
+	grog("setup");
+
 	if (ioEnabled) {
+		grog("start server");
 		myServer = new Server(this, 7070);
+		grog("server started");
 	}
 
 	if (serialEnabled) {
+
+		grog("start serial");
 
 		// println(arduinoPort.list());
 		// could find this automatically by the expected key or something
@@ -121,6 +128,8 @@ void setup() {
 		arduinoPort.write("00000000000000000000000000000000\n");
 		delay(1000);
 
+		grog("serial started, initial clear sent");
+
 	}
 
 	frameRate(30);
@@ -134,9 +143,11 @@ void setup() {
 }
 
 void allOff() {
+	grog("all off");
 	if (serialEnabled) {
 		arduinoPort.write("00000000000000000000000000000000\n");
 	}
+	grog("alloff sent");
 }
 
 void loadSet() {
@@ -144,10 +155,12 @@ void loadSet() {
 	System.out.println("loadSet called");
 
 	if (null != audio) {
+		grog("stop and close audio");
 		audio.stop();
 		audio.close();
 	}
 	if (null != sequencer) {
+		grog("stop and close sequencer");
 		sequencer.stop();
 		sequencer.close();
 	}
@@ -159,12 +172,16 @@ void loadSet() {
 
 	// load audio
 	try {
+
+		grog("load audio");
+
 		AudioInputStream audioIn;
 		audioIn = AudioSystem.getAudioInputStream(new File(dataPath(setToLoad + ".wav")));
 		audio = AudioSystem.getClip();
 		audio.open(audioIn);
 
 		if (audioMuted) {
+			grog("change audio vol to 0");
 			FloatControl audiGainControl = (FloatControl) audio.getControl(FloatControl.Type.MASTER_GAIN);
 			audiGainControl.setValue(-80.0f); // reduction in DB
 		}
@@ -179,6 +196,8 @@ void loadSet() {
 
 	// load midi
 	try {
+
+		grog("load midi");
 
 		File midiFile = new File(dataPath(setToLoad + ".mid"));
 		sequencer = MidiSystem.getSequencer();
@@ -286,7 +305,11 @@ void loadSet() {
 			}
 		}
 
+		grog("setting the sequence again?");
+
 		sequencer.setSequence(sequence);
+
+		grog("sequencer is all set");
 
 	} catch (Exception e){
 
@@ -360,6 +383,8 @@ void draw() {
 
 	if (sequencePlaying && millis() - lastCheck > 500) { // long lastCheck = 0;
 
+		// grog("server started");
+
 		long seqPos = sequencer.getMicrosecondPosition();
 		long audPos = audio.getMicrosecondPosition();
 		// todo: check audPos and make sure they're tracking together -- may need to rewrite or wrap SoundFile
@@ -374,11 +399,16 @@ void draw() {
 
 		if (audPos >= audio.getMicrosecondLength()) {
 
+			grog("audio has ended");
+
 			stopPlayback();
 
 			if (sequencePostDelayMS[currentSequenceNumber] > 0) {
+				grog("delay");
 				delay(sequencePostDelayMS[currentSequenceNumber]);
 			}
+
+			grog("time for next set");
 
 			// autoadvance:
 			nextSet();
@@ -557,6 +587,13 @@ public static final void addNotesToTrack(Track track, Track trk) throws InvalidM
 				trk.add(me2);
 			}
 		}
+	}
+}
+
+void grog(String message) {
+	if (verboseLogging == true) {
+		message = millis() + " " + message;
+		println(message);
 	}
 }
 
