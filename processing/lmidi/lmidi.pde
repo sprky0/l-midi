@@ -451,6 +451,7 @@ void draw() {
 					case "playpause":
 					if (sequencePlaying) {
 						stopPlayback();
+						allOff();
 					} else {
 						startPlayback();
 					}
