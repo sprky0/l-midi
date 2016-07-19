@@ -35,7 +35,7 @@ boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
 boolean audioDisabled = false; // mute audio?
 boolean midiMuted = true; // mute midi?
-boolean drawEnabled = false; // true; // visual representation
+boolean drawEnabled = true; // true; // visual representation
 
 boolean sequencePlaying = false;
 
@@ -344,7 +344,20 @@ void draw() {
 		fill(0,0,0);
 		rect(0,0,1024,512);
 
+		// first draw our playing/ not playing box
+		if (sequencePlaying) {
+			noStroke();
+			fill(  0, 255,   0);
+			rect(0, 0, 127, 511);
+			// 1024, 512
+		} else {
+			noStroke();
+			fill(255,  0,   0);
+			rect(0, 0, 127, 511);
+		}
+
 		for (int i = 0; i < noteCount; i++) {
+
 			// //System.out.println( notes[i] + " " + i);
 			if (noteVelocity[i] > 0) {
 				if (noteState[i] == 1) {
@@ -362,24 +375,14 @@ void draw() {
 				// rect(i * 8, 0, 8, 512);
 			}
 
-			if ((i + noteTransposition) >= postTranspositionLowest && (i + noteTransposition) < postTranspositionLowest) {
-				fill(  0, 255,   0);
-				rect(i * 8, 0, 8, 512);
+			if ((i + noteTransposition) >= postTranspositionLowest && (i + noteTransposition) < postTranspositionHighest) {
+				fill(  0,  0,  255);
+				rect(i*8,  0,  8,  8);
+				rect(i*8,512-8,  8,  8);
 			}
 
 		}
 
-	}
-
-	if (sequencePlaying) {
-		noStroke();
-		fill(  0, 255,   0);
-		rect(0, 0, 127, 511);
-		// 1024, 512
-	} else {
-		noStroke();
-		fill(255,  0,   0);
-		rect(0, 0, 127, 511);
 	}
 
 	if (sequencePlaying && millis() - lastCheck > 500) { // long lastCheck = 0;
