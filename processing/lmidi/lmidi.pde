@@ -35,7 +35,7 @@ boolean serialEnabled = true; // send serial?
 boolean audioMuted = false; // mute audio?
 boolean audioDisabled = false; // mute audio?
 boolean midiMuted = true; // mute midi?
-boolean drawEnabled = true; // true; // visual representation
+boolean drawEnabled = false; // true; // visual representation
 
 boolean sequencePlaying = false;
 
