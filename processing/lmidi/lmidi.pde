@@ -78,7 +78,8 @@ String sequenceList[] = {
 	// "run32-1x",
 	// "run32-fast1",
 	"runs-v1",
-	"deb_clai_format0"
+	// "deb_clai_format0"
+	"canon-v1"
 };
 int sequencePostDelayMS[] = {
 	5000,
